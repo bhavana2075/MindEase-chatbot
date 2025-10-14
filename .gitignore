@@ -1,0 +1,23 @@
+# Python cache
+__pycache__/
+*.pyc
+
+# Virtual environments
+.venv/
+env/
+venv/
+
+# Environment variables
+.env
+*.env
+
+# Chat history or data
+chat_history.json
+*.db
+*.sqlite3
+*.log
+
+# OS / IDE files
+.DS_Store
+.vscode/
+.idea/
