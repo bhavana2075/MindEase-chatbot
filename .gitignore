@@ -17,8 +17,12 @@ chat_history.json
 *.sqlite3
 *.log
 
-saved_model/
 # OS / IDE files
 .DS_Store
 .vscode/
 .idea/
+# Local model files
+saved_model/
+*.pt
+*.bin
+*.safetensors

@@ -27,11 +27,21 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ====== Load emotion model ======
-MODEL_PATH = "saved_model"
-tokenizer = AutoTokenizer.from_pretrained(MODEL_PATH)
-model = AutoModelForSequenceClassification.from_pretrained(MODEL_PATH)
+
+# ====== Load emotion model from Hugging Face ======
+MODEL_PATH = "bhavana2075/emotion_detection"  # replace with your HF model repo
+HF_TOKEN = os.getenv("HUGGINGFACE_TOKEN")
+
+tokenizer = AutoTokenizer.from_pretrained(
+    MODEL_PATH,
+    use_auth_token=HF_TOKEN  # allows access if model is private
+)
+model = AutoModelForSequenceClassification.from_pretrained(
+    MODEL_PATH,
+    use_auth_token=HF_TOKEN
+)
 labels = ['anger', 'fear', 'joy', 'love', 'sadness', 'surprise', 'neutral']
+
 
 # ====== Chat history ======
 HISTORY_FILE = "chat_history.json"
