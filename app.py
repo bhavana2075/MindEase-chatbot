@@ -3,10 +3,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-from transformers import AutoTokenizer, AutoModelForSequenceClassification
 from groq import Groq
 from dotenv import load_dotenv
-import torch, json, os
+import json, os
 
 # ====== Load environment variables ======
 load_dotenv()
@@ -29,18 +28,13 @@ app.add_middleware(
 
 
 # ====== Load emotion model from Hugging Face ======
-MODEL_PATH = "bhavana2075/emotion_detection"  # replace with your HF model repo
-HF_TOKEN = os.getenv("HUGGINGFACE_TOKEN")
+import requests
 
-tokenizer = AutoTokenizer.from_pretrained(
-    MODEL_PATH,
-    use_auth_token=HF_TOKEN  # allows access if model is private
-)
-model = AutoModelForSequenceClassification.from_pretrained(
-    MODEL_PATH,
-    use_auth_token=HF_TOKEN
-)
-labels = ['anger', 'fear', 'joy', 'love', 'sadness', 'surprise', 'neutral']
+HF_API_URL = "https://api-inference.huggingface.co/models/bhavana2075/emotion_detection"
+HF_HEADERS = {
+    "Authorization": f"Bearer {os.getenv('HUGGINGFACE_TOKEN')}"
+}
+
 
 
 # ====== Chat history ======
@@ -63,9 +57,19 @@ def detect_emotion(text):
     greetings = ["hi", "hello", "hey", "good morning", "good evening"]
     if any(word in text.lower() for word in greetings):
         return "neutral"
-    inputs = tokenizer(text, return_tensors="pt", truncation=True, padding=True)
-    outputs = model(**inputs)
-    return labels[torch.argmax(outputs.logits)]
+
+    payload = {"inputs": text}
+    response = requests.post(HF_API_URL, headers=HF_HEADERS, json=payload)
+
+    if response.status_code != 200:
+        return "neutral"
+
+    result = response.json()
+
+    try:
+        return max(result[0], key=lambda x: x["score"])["label"]
+    except:
+        return "neutral"
 
 
 @app.get("/", response_class=HTMLResponse)
